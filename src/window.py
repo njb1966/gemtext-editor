@@ -13,24 +13,53 @@ class AppWindow(Gtk.ApplicationWindow):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self.set_title("Gemtext Editor")
         self.set_default_size(1400, 900)
 
         self.is_dirty: bool = False
         self._preview_timeout_id: int | None = None
 
+        self._build_header()
         self._build_layout()
         self._setup_actions()
         self.connect("close-request", self._on_close_request)
 
     # -------------------------------------------------------------------------
-    # Layout
+    # Header bar
+    # -------------------------------------------------------------------------
+
+    def _build_header(self):
+        header = Gtk.HeaderBar()
+        self.set_titlebar(header)
+
+        # Save button (left side)
+        self._save_btn = Gtk.Button(icon_name="document-save-symbolic")
+        self._save_btn.set_tooltip_text("Save  Ctrl+S")
+        self._save_btn.set_sensitive(False)
+        self._save_btn.connect("clicked", lambda _: self._editor.save_file())
+        header.pack_start(self._save_btn)
+
+        # Hamburger menu (right side)
+        menu = Gio.Menu()
+        menu.append("New File", "win.new-file")
+        menu.append("Open Folder", "win.open-folder")
+
+        section = Gio.Menu()
+        section.append("Dark Mode", "win.dark-mode")
+        menu.append_section(None, section)
+
+        menu_btn = Gtk.MenuButton()
+        menu_btn.set_icon_name("open-menu-symbolic")
+        menu_btn.set_menu_model(menu)
+        menu_btn.set_tooltip_text("Menu")
+        header.pack_end(menu_btn)
+
+    # -------------------------------------------------------------------------
+    # Main layout
     # -------------------------------------------------------------------------
 
     def _build_layout(self):
         root_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
-        # Three-panel area (fills available space)
         outer_paned = Gtk.Paned(orientation=Gtk.Orientation.HORIZONTAL)
         outer_paned.set_position(250)
         outer_paned.set_vexpand(True)
@@ -56,8 +85,7 @@ class AppWindow(Gtk.ApplicationWindow):
         root_box.append(outer_paned)
 
         # Status bar
-        separator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
-        root_box.append(separator)
+        root_box.append(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
 
         self._status_label = Gtk.Label(label="No file open")
         self._status_label.set_xalign(0)
@@ -77,20 +105,23 @@ class AppWindow(Gtk.ApplicationWindow):
     def _setup_actions(self):
         app = self.get_application()
 
-        actions = [
-            ("open-folder", lambda *_: self._file_tree.trigger_open_folder(),
-             "<Control>o"),
-            ("new-file",    lambda *_: self._file_tree.trigger_new_file(),
-             "<Control>n"),
-            ("quit",        lambda *_: self.close(),
-             "<Control>q"),
+        simple_actions = [
+            ("open-folder", lambda *_: self._file_tree.trigger_open_folder(), "<Control>o"),
+            ("new-file",    lambda *_: self._file_tree.trigger_new_file(),    "<Control>n"),
+            ("quit",        lambda *_: self.close(),                           "<Control>q"),
         ]
-
-        for name, handler, accel in actions:
+        for name, handler, accel in simple_actions:
             action = Gio.SimpleAction(name=name)
             action.connect("activate", handler)
             self.add_action(action)
             app.set_accels_for_action(f"win.{name}", [accel])
+
+        # Dark mode — stateful toggle (shows checkmark in menu)
+        dark_action = Gio.SimpleAction.new_stateful(
+            "dark-mode", None, GLib.Variant.new_boolean(False)
+        )
+        dark_action.connect("activate", self._on_dark_mode_toggled)
+        self.add_action(dark_action)
 
     # -------------------------------------------------------------------------
     # Signal handlers
@@ -98,6 +129,7 @@ class AppWindow(Gtk.ApplicationWindow):
 
     def _on_file_activated(self, _file_tree, file_path: str):
         self._editor.load_file(file_path)
+        self._save_btn.set_sensitive(True)
         self._update_title(file_path, dirty=False)
         self._status_label.set_label(file_path)
         self._preview.render(self._editor.get_text())
@@ -112,9 +144,18 @@ class AppWindow(Gtk.ApplicationWindow):
             GLib.source_remove(self._preview_timeout_id)
         self._preview_timeout_id = GLib.timeout_add(300, self._do_preview_update)
 
+    def _on_dark_mode_toggled(self, action, _param):
+        current = action.get_state().get_boolean()
+        new_state = not current
+        action.set_state(GLib.Variant.new_boolean(new_state))
+        Gtk.Settings.get_default().set_property(
+            "gtk-application-prefer-dark-theme", new_state
+        )
+        self._preview.set_dark_mode(new_state)
+
     def _on_close_request(self, _window) -> bool:
         if not self.is_dirty:
-            return False  # Allow close immediately
+            return False
 
         dialog = Gtk.MessageDialog(
             transient_for=self,
@@ -136,11 +177,10 @@ class AppWindow(Gtk.ApplicationWindow):
                 self.destroy()
             elif response == Gtk.ResponseType.NO:
                 self.destroy()
-            # CANCEL: do nothing — window stays open
 
         dialog.connect("response", on_response)
         dialog.present()
-        return True  # Intercept the close; we handle it above
+        return True
 
     # -------------------------------------------------------------------------
     # Helpers

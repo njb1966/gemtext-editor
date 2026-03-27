@@ -56,6 +56,16 @@ class PreviewPanel(Gtk.Box):
             left_margin=12,
             right_margin=12)
 
+    def set_dark_mode(self, dark: bool):
+        """Update preformatted tag colours for light/dark mode."""
+        tag = self._buffer.get_tag_table().lookup("preformatted")
+        if dark:
+            tag.set_property("foreground", "#00d7d7")   # cyan
+            tag.set_property("background-set", False)   # use theme background
+        else:
+            tag.set_property("foreground-set", False)   # use theme foreground
+            tag.set_property("background", "#f0f0f0")   # light gray
+
     def render(self, content: str):
         """Parse and render gemtext content into the preview buffer."""
         self._buffer.set_text("")

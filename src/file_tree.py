@@ -25,6 +25,7 @@ class FileTreePanel(Gtk.Box):
         super().__init__(orientation=Gtk.Orientation.VERTICAL)
         self._project_root: Path | None = None
         self._context_target: dict | None = None  # {path, is_dir}
+        self._folder_dialog: Gtk.FileChooserNative | None = None
         self._build_ui()
         self._build_context_menu()
 
@@ -95,15 +96,15 @@ class FileTreePanel(Gtk.Box):
     # -------------------------------------------------------------------------
 
     def _on_open_folder_clicked(self, _button):
-        dialog = Gtk.FileChooserNative(
+        self._folder_dialog = Gtk.FileChooserNative(
             title="Open Project Folder",
             action=Gtk.FileChooserAction.SELECT_FOLDER,
             accept_label="Open",
             cancel_label="Cancel",
         )
-        dialog.set_transient_for(self.get_root())
-        dialog.connect("response", self._on_folder_chosen)
-        dialog.show()
+        self._folder_dialog.set_transient_for(self.get_root())
+        self._folder_dialog.connect("response", self._on_folder_chosen)
+        self._folder_dialog.show()
 
     def _on_folder_chosen(self, dialog, response):
         if response == Gtk.ResponseType.ACCEPT:
@@ -111,6 +112,7 @@ class FileTreePanel(Gtk.Box):
             if folder:
                 self._project_root = Path(folder.get_path())
                 self._populate_tree()
+        self._folder_dialog = None
 
     # -------------------------------------------------------------------------
     # Tree population
