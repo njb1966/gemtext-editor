@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Gemtext Editor
+GenericName=Text Editor
+Comment=Edit Gemini capsule content (.gmi files)
+Exec=python3 @SRCDIR@/src/main.py %f
+Icon=org.gemtext.editor
+Terminal=false
+Type=Application
+Categories=Utility;TextEditor;
+MimeType=text/gemini;
+Keywords=gemini;gemtext;gmi;capsule;
+StartupWMClass=org.gemtext.editor

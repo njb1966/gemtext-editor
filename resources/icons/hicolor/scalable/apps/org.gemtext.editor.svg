@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- App background -->
+  <rect width="128" height="128" rx="24" fill="#0d1b2a"/>
+
+  <!-- === GEM SHAPE === -->
+
+  <!-- Crown base fill -->
+  <polygon points="42,12 86,12 120,56 8,56" fill="#0284c7"/>
+  <!-- Crown center facet — brightest, catches direct light -->
+  <polygon points="42,12 86,12 64,56" fill="#38bdf8"/>
+  <!-- Crown left facet — shadow side -->
+  <polygon points="8,56 42,12 64,56" fill="#0369a1"/>
+  <!-- Crown right facet — mid-shadow -->
+  <polygon points="86,12 120,56 64,56" fill="#075985"/>
+
+  <!-- Table highlight (top flat face) -->
+  <polygon points="42,12 86,12 78,26 50,26" fill="#7dd3fc" opacity="0.7"/>
+
+  <!-- Pavilion left — deep shadow -->
+  <polygon points="8,56 64,56 64,116" fill="#0c4a6e"/>
+  <!-- Pavilion right — catches light -->
+  <polygon points="64,56 120,56 64,116" fill="#0ea5e9" opacity="0.75"/>
+
+  <!-- Internal facet lines -->
+  <line x1="8"  y1="56" x2="120" y2="56"  stroke="#bae6fd" stroke-width="1.5" opacity="0.45"/>
+  <line x1="42" y1="12" x2="64"  y2="56"  stroke="#bae6fd" stroke-width="1.5" opacity="0.35"/>
+  <line x1="86" y1="12" x2="64"  y2="56"  stroke="#bae6fd" stroke-width="1.5" opacity="0.35"/>
+  <line x1="64" y1="56" x2="64"  y2="116" stroke="#bae6fd" stroke-width="1.5" opacity="0.2"/>
+
+  <!-- Outer outline -->
+  <polygon points="42,12 86,12 120,56 64,116 8,56"
+           fill="none" stroke="#bae6fd" stroke-width="2.5" stroke-linejoin="round"/>
+</svg>
