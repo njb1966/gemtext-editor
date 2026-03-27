@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language id="gemtext" name="Gemtext" version="2.0" _section="Markup">
+  <metadata>
+    <property name="mimetypes">text/gemini</property>
+    <property name="globs">*.gmi</property>
+  </metadata>
+
+  <styles>
+    <style id="link"         name="Link"      map-to="def:preprocessor"/>
+    <style id="heading1"     name="Heading 1" map-to="def:type"/>
+    <style id="heading2"     name="Heading 2" map-to="def:keyword"/>
+    <style id="heading3"     name="Heading 3" map-to="def:identifier"/>
+    <style id="list"         name="List Item" map-to="def:statement"/>
+    <style id="quote"        name="Quote"     map-to="def:comment"/>
+    <style id="preformatted" name="Preformatted" map-to="def:string"/>
+  </styles>
+
+  <definitions>
+    <context id="gemtext">
+      <include>
+
+        <!-- Preformatted block (``` toggle) — must come before heading checks -->
+        <context id="preformatted" style-ref="preformatted">
+          <start>^```</start>
+          <end>^```</end>
+        </context>
+
+        <!-- Links: lines starting with => -->
+        <context id="link" style-ref="link">
+          <match>^=&gt;.*$</match>
+        </context>
+
+        <!-- Headings: ### before ## before # to avoid prefix collisions -->
+        <context id="heading3" style-ref="heading3">
+          <match>^###.*$</match>
+        </context>
+        <context id="heading2" style-ref="heading2">
+          <match>^##[^#].*$|^##$</match>
+        </context>
+        <context id="heading1" style-ref="heading1">
+          <match>^#[^#].*$|^#$</match>
+        </context>
+
+        <!-- List items: lines starting with * -->
+        <context id="list" style-ref="list">
+          <match>^\*.*$</match>
+        </context>
+
+        <!-- Quotes: lines starting with > -->
+        <context id="quote" style-ref="quote">
+          <match>^&gt;.*$</match>
+        </context>
+
+      </include>
+    </context>
+  </definitions>
+</language>
